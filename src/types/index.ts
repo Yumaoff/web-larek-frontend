@@ -64,19 +64,3 @@ export interface IAppData {
   basket: IProduct[]
   order: IOrder
 }
-
-//События
-export enum Events {
-  PRODUCTS_CHANGED = 'products:changed',
-  PRODUCT_OPEN_IN_MODAL = 'product:openInModal',
-  ADD_PRODUCT_TO_BASKET = 'product:addToBasket',
-  MODAL_OPEN = 'modal:open',
-  MODAL_CLOSE = 'modal:close',
-  BASKET_OPEN = 'basket:open',
-  ORDER_START = 'order:start',
-  REMOVE_PRODUCT_FROM_BASKET = 'product:removeFromBasket',
-  SET_PAYMENT_TYPE = 'order:setPaymentType',
-  ORDER_READY = 'order:ready',
-  FORM_ERRORS_CHANGED = 'form:errorsChanged',
-  ORDER_CLEAR = 'order:clear',
-}

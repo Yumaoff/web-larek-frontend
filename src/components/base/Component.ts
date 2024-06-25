@@ -53,5 +53,8 @@ export abstract class Component<T> {
   }
 
   // Абстрактный метод render, который должен быть реализован в подклассах
-  abstract render(data?: Partial<T>): HTMLElement;
+  render(data?: Partial<T>): HTMLElement {
+    Object.assign(this as object, data ?? {});
+    return this.element;
+}
 }

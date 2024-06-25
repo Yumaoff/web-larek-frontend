@@ -1,69 +1,89 @@
-import { IProduct, IOrder, Events, IAppData } from '../types'; // предполагается, что интерфейсы хранятся в types/index.ts
+import { IProduct, IOrder, IAppData } from '../types'; // предполагается, что интерфейсы хранятся в types/index.ts
 import { Model } from './base/Model'; // предполагается, что базовый класс Model хранится в соответствующем файле
 import {IEvents} from "./base/Events";
 
 export class AppData extends Model<IAppData> {
-  private products: IProduct[] = [];
-  private basket: IProduct[] = [];
-  private order: IOrder;
-  private selectedProduct: string | null = null;
+  protected _products: IProduct[] = [];
+  protected _basket: IProduct[] = [];
+  protected _order: IOrder;
+  protected _selectedProduct: string | null = null;
 
   constructor(data: Partial<IAppData>, events: IEvents, products: IProduct[], basket: IProduct[], order: IOrder) {
     super(data, events);
-    this.products = products;
-    this.basket = basket;
-    this.order = order;
+    this._products = products;
+    this._basket = basket;
+    this._order = order;
 }
+
+  set products(products: IProduct[]) {
+    this._products = products;
+  }
+
+  set order(order: IOrder) {
+    this._order = order;
+  }
+
+  get order() {
+    return this._order
+  }
+
+  get basket() {
+    return this._basket
+  }
+
+  get products() {
+    return this._products
+  }
 
   // Устанавливаем список продуктов
   setProducts(products: IProduct[]): void {
-    this.products = products;
+    this._products = products;
     this.emitChanges('products:changed', { products });
   }
 
   // Выбираем продукт для отображения в модальном окне
   selectProduct(productId: string): void {
-    this.selectedProduct = productId;
+    this._selectedProduct = productId;
     this.emitChanges('product:preview', { productId });
   }
 
   // Добавляем продукт в корзину
   addProductToBasket(product: IProduct): void {
-    this.basket.push(product);
+    this._basket.push(product);
     this.emitChanges('basket:add-product', { product });
   }
 
   // Удаляем продукт из корзины
   removeProductFromBasket(productId: number): void {
-    this.basket = this.basket.filter(product => product.id !== productId);
+    this._basket = this._basket.filter(product => product.id !== productId);
     this.emitChanges('basket:remove-product', { productId });
   }
 
   // Получаем продукты в корзине
   getBasketProducts(): IProduct[] {
-    return this.basket;
+    return this._basket;
   }
 
   // Получаем общую стоимость корзины
   getTotalPrice(): number {
-    return this.basket.reduce((total, product) => total + (product.price || 0), 0);
+    return this._basket.reduce((total, product) => total + (product.price || 0), 0);
   }
 
   // Очищаем корзину
   clearBasket(): void {
-    this.basket = [];
+    this._basket = [];
     this.emitChanges('basket:clear', {});
   }
 
   // Очищаем текущий заказ
   clearOrder(): void {
-    this.order = {} as IOrder;
+    this._order = {} as IOrder;
     this.emitChanges('order:clear', {});
   }
 
   // Устанавливаем значение для поля заказа
   setOrderField<K extends keyof IOrder>(field: K, value: IOrder[K]): void {
-    this.order[field] = value;
+    this._order[field] = value;
     this.emitChanges('order:set-field', { field, value });
   }
 
@@ -72,11 +92,11 @@ export class AppData extends Model<IAppData> {
     let isValid = true;
     const errors: Partial<Record<keyof IOrder, string>> = {};
 
-    if (!this.order.email) {
+    if (!this._order.email) {
       isValid = false;
       errors.email = 'Email is required';
     }
-    if (!this.order.phone) {
+    if (!this._order.phone) {
       isValid = false;
       errors.phone = 'Phone is required';
     }
