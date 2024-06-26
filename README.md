@@ -46,72 +46,97 @@ yarn build
 
 ```
 export interface IProduct {
-  id: number;
+  id: string;
   title: string;
   description: string;
   category: string;
   price: number | null;
-  imageUrl: string;
+  image: string;
   index: number;
 }
 ```
 
-Заказ
+Тип для ответа API на запрос списка товаров 
 
 ```
-export interface IOrder {
-  id: number;
-  email: string;
-  phone: string;
-  items: CartItem[];
+export interface IApiListResponse<Type> {
   total: number;
-  address: string;
-  paymentMethod: string;
+  items: Type[];
 }
 ```
 
-Товар в корзине
-
-```
-export interface CartItem {
-  productId: number;
-  quantity: number;
-}
-```
-
-Интерфейс корзины 
-```
-export interface IBasket {
-  products: HTMLElement[];
-  total: number | null;
-  selected: number
-}
-```
-
-Интерфейс данных после отправки заказа на сервер
-
-```
-export interface IOrderResult {
-  id: string
-  total: number
-}
-```
-
-Интерфейс ответа сервера
-
-```
-interface IApi {
-  getProducts: () => Promise<IProduct[]>
-  orderProducts(order: IOrder): Promise<IOrderResult>
-}
-```
-
-Тип для установки метода API
+Тип для методов POST, PUT, DELETE 
 
 ```
 export type TApiPostMethods = 'POST' | 'PUT' | 'DELETE';
+
 ```
 
+Тип для заказа
+```
+export type TOrder = Pick<IOrder, 'payment' | 'address' | 'email' | 'phone'>;
+
+```
+
+Ошибки формы
+
+```
+export type FormErrors = {
+  email?: string;
+  phone?: string;
+  address?: string;
+  paymentMethod?: string;
+};
+```
+
+Интерфейс для заказа
+
+```
+export interface IOrder {
+  email: string;
+  phone: string;
+  items: string[]; 
+  total: number;
+  address: string;
+  payment: string;
+}
+```
+
+Интерфейс для результата заказа 
+
+```
+export interface IOrderResult {
+  id: string;
+  total: number;
+}
+```
+
+Интерфейс для содержимого модального окна 
+
+```
+export interface IModalData {
+  content: HTMLElement;
+}
+```
+
+Интерфейс для взаимодействия с API 
+
+```
+export interface IApi {
+  getProducts: () => Promise<IProduct[]>;
+  orderProducts: (order: IOrder) => Promise<IOrderResult>;
+}
+```
+
+Интерфейс для модели данных приложения
+
+```
+export interface IAppData {
+  products: IProduct[];
+  basket: IProduct[];
+  order: IOrder | null;
+}
+```
 
 ## Архитектура приложения
 
@@ -184,21 +209,243 @@ export type TApiPostMethods = 'POST' | 'PUT' | 'DELETE';
 - `basket: IProduct[]` - массив товаров в корзине.
 - `order: IOrder` - текущий заказ.
 - `selectedProduct: string | null` - ID товара, выбранного для отображения в модальном окне.
+- `formErrors` - объект ошибок формы.
 
 Методы для работы с данными:
 
-- `setProducts` - устанавливает список товаров для главной страницы.
-- `selectProduct` - выбирает продукт для отображения в модальном окне.
-- `addProductToBasket` - добавляет товар в корзину.
-- `removeProductFromBasket` - удаляет товар из корзины по его ID.
-- `getBasketProducts` - возвращает массив товаров в корзине.
-- `getTotalPrice` - возвращает общую стоимость товаров в корзине.
-- `clearBasket` - очищает корзину.
-- `clearOrder` - очищает текущий заказ.
-- `setOrderField` - устанавливает значение для поля в заказе.
-- `validateOrder` - валидирует поля заказа.
+- `set products(products: IProduct[])` - устанавливает список продуктов.
+- `set order(order: IOrder)` - устанавливает текущий заказ.
+- `get order()` - возвращает текущий заказ.
+- `get basket()` - возвращает корзину.
+- `get products()` - возвращает список продуктов.
+- `isFirstFormFill()` - проверяет, заполнены ли поля адреса и оплаты в заказе.
+- `setProducts(products: IProduct[])` - устанавливает список продуктов и инициирует событие изменения продуктов.
+- `getProducts()` - возвращает список продуктов.
+- `selectProduct(productId: string)` - выбирает продукт для отображения в модальном окне и инициирует событие предварительного просмотра продукта.
+- `addProductToBasket(product: IProduct)` - добавляет продукт в корзину и инициирует событие добавления продукта в корзину.
+- `removeProductFromBasket(productId: string)` - удаляет продукт из корзины по его ID и инициирует событие удаления продукта из корзины.
+- `getBasketProducts()` - возвращает массив товаров в корзине.
+- `getTotalPrice()` - возвращает общую стоимость товаров в корзине.
+- `getProduct(cardId: string)` - возвращает продукт по его ID.
+- `getBasket()` - возвращает корзину.
+- `clearBasket()` - очищает корзину и инициирует событие очистки корзины.
+- `getOrder()` - возвращает текущий заказ.
+- `clearOrder()` - очищает текущий заказ и инициирует событие очистки заказа.
+- `setOrderField(field: keyof TOrder, value: string)` - устанавливает значение для поля заказа и валидирует заказ.
+- `validateOrder(field: keyof IOrder)` - валидирует поля заказа и обновляет объект ошибок формы.
 
 ### Классы представления
 
 Все классы представления отвечают за отображение внутри контейнера (DOM-элемент) передаваемых в них данных. 
 
+#### Класс Form
+
+Класс Form отвечает за управление формами в приложении. Он наследуется от базового класса Component, что позволяет ему использовать обобщенные методы для работы с DOM-элементами.
+
+`constructor(element: HTMLFormElement, protected events: IEvents)`
+
+- element - HTML-элемент формы, который будет управляться данным классом.
+- events - экземпляр интерфейса IEvents для управления событиями.
+
+Поля
+
+- submitBtn - кнопка отправки формы.
+- formName - имя формы, взятое из атрибута name.
+- _errors - элемент для отображения ошибок формы.
+- _form - HTML-элемент формы.
+
+Основные методы
+
+- `onInputChange(field: keyof IOrder, value: string)` - метод для обработки изменений в полях ввода. Инициирует событие изменения поля с именем формы и полем.
+- `set valid(value: boolean)` - сеттер для установки валидности формы. Если форма не валидна, кнопка отправки блокируется.
+- `set errors(value: string)` - сеттер для установки текста ошибок формы.
+- `close()` - метод для сброса формы.
+- `render(state: Partial<IOrder> & IForm)` - метод для рендеринга состояния формы. Принимает объект состояния, содержащий валидность, ошибки и другие поля.
+
+#### Класс Modal
+
+Класс Modal отвечает за управление модальными окнами в приложении. Он наследуется от базового класса Component, что позволяет ему использовать обобщенные методы для работы с DOM-элементами.
+
+`constructor(element: HTMLElement, protected events: IEvents)`
+
+- element - HTML-элемент, который будет представлять модальное окно.
+- events - экземпляр интерфейса IEvents для управления событиями.
+
+Поля
+
+- _closeButton - кнопка для закрытия модального окна.
+- _content - элемент для отображения содержимого модального окна.
+
+Основные методы
+
+- `handleKeyDown(event: KeyboardEvent)` - приватный метод для обработки нажатий клавиш. Закрывает модальное окно при нажатии на Escape.
+- `set content(content: HTMLElement)` - сеттер для установки содержимого модального окна.
+- `open()` - метод для открытия модального окна. Устанавливает класс активности и инициирует событие открытия.
+- `close()` - метод для закрытия модального окна. Убирает класс активности и инициирует событие закрытия.
+- `render(data: IModalData): HTMLElement` - метод для рендеринга содержимого модального окна. Принимает объект данных модального окна и открывает его.
+
+#### Класс AppApi
+
+Класс AppApi отвечает за взаимодействие с API сервера и расширяет базовый класс Api. Он реализует интерфейс IApi и предоставляет методы для получения продуктов и размещения заказов.
+
+`constructor(cdn: string, baseUrl: string, options?: RequestInit)`
+
+- cdn - строка с URL CDN (Content Delivery Network) для загрузки изображений продуктов.
+- baseUrl - базовый URL API сервера.
+- options - опциональные параметры для конфигурации запросов.
+
+Поля
+
+- cdn - URL CDN, используемый для загрузки изображений продуктов.
+
+Основные методы
+
+- `getProducts(): Promise<IProduct[]>` - метод для получения списка продуктов. Возвращает промис, который резолвится массивом продуктов с обновленными URL изображений.
+- `orderProducts(order: IOrder): Promise<IOrderResult>` - метод для размещения заказа. Возвращает промис, который резолвится результатом заказа.
+
+#### Класс BasketView
+
+Класс Basket отвечает за управление корзиной покупок в приложении. Он наследуется от базового класса Component и реализует методы для управления списком продуктов, общей стоимостью и взаимодействием с пользователем.
+
+`constructor(element: HTMLElement, protected events: IEvents)`
+
+- element - HTML-элемент, представляющий корзину.
+- events - экземпляр интерфейса IEvents для управления событиями.
+
+Поля
+
+- _list - элемент списка продуктов в корзине.
+- _total - элемент отображения общей стоимости.
+- _button - кнопка для оформления заказа.
+
+Основные методы
+
+- `set selected(items: number)` - сеттер для управления состоянием кнопки оформления заказа в зависимости от количества выбранных продуктов.
+- `set products(products: HTMLElement[])` - сеттер для обновления списка продуктов в корзине.
+- `set total(total: number)` - сеттер для обновления отображения общей стоимости в корзине.
+
+#### Класс ContactsView
+
+Класс ContactsForm отвечает за управление формой контактов в приложении. Он наследуется от базового класса Form и реализует методы для управления полями электронной почты и телефона.
+
+`constructor(element: HTMLFormElement, events: IEvents)`
+
+- element - HTML-элемент формы, представляющий форму контактов.
+- events - экземпляр интерфейса IEvents для управления событиями.
+
+Поля
+
+- _email - элемент поля ввода электронной почты.
+- _phone - элемент поля ввода телефона.
+
+Основные методы
+
+- `set phone(value: string)` - сеттер для установки значения поля ввода телефона.
+- `set email(value: string)` - сеттер для установки значения поля ввода электронной почты.
+
+#### Класс OrderForm
+
+Класс OrderForm отвечает за управление формой заказа в приложении. Он наследуется от базового класса Form и реализует методы для управления полями адреса и способами оплаты.
+
+`constructor(element: HTMLFormElement, events: IEvents)`
+
+- element - HTML-элемент формы, представляющий форму заказа.
+- events - экземпляр интерфейса IEvents для управления событиями.
+
+Поля
+
+- _cashPayment - кнопка выбора оплаты наличными.
+- _cardPayment - кнопка выбора оплаты картой.
+- _address - элемент поля ввода адреса.
+- _paymentMethod - строка, представляющая выбранный способ оплаты.
+
+Основные методы
+
+- `set address(value: string)` - сеттер для установки значения поля ввода адреса.
+- `setPayment(button: HTMLButtonElement)` - устанавливает выбранный способ оплаты и инициирует событие выбора оплаты.
+- `toggleCard(state: boolean = true)` - переключает состояние кнопки выбора оплаты картой.
+- `toggleCash(state: boolean = true)` - переключает состояние кнопки выбора оплаты наличными.
+
+#### Класс PageView
+
+Класс Page отвечает за управление основной страницей приложения. Он наследуется от базового класса Component и реализует методы для управления корзиной, галереей и состоянием страницы.
+
+`constructor(container: HTMLElement, protected events: IEvents)`
+
+- container - HTML-элемент, представляющий контейнер страницы.
+- events - экземпляр интерфейса IEvents для управления событиями.
+
+Поля
+
+- _basketCounter - элемент для отображения количества товаров в корзине.
+- _gallery - элемент галереи товаров.
+- _wrapper - основной контейнер страницы.
+- _basket - элемент корзины.
+
+Основные методы
+
+- `set basketCounter(value: number)` - сеттер для установки значения счетчика товаров в корзине.
+- `set gallery(items: HTMLElement[])` - сеттер для обновления галереи товаров.
+- `set wrapper(value: boolean)` - сеттер для переключения состояния заблокированного контейнера страницы.
+
+#### Класс ProductData
+
+Класс Product отвечает за управление компонентом продукта в приложении. Он наследуется от базового класса Component и предоставляет методы для установки различных атрибутов продукта, таких как изображение, заголовок, категория, цена, описание и индекс.
+
+`constructor(blockName: string, element: HTMLElement, actions?: IProductActions)`
+
+- blockName - строка, представляющая базовое имя блока для классов CSS.
+- element - HTML-элемент, представляющий элемент продукта.
+- actions - опциональный объект, содержащий обработчики событий для компонента.
+
+Поля
+
+- _image - элемент изображения продукта.
+- _title - элемент заголовка продукта.
+- _category - элемент категории продукта.
+- _price - элемент цены продукта.
+- _description - элемент описания продукта.
+- _button - элемент кнопки продукта.
+- _index - элемент индекса продукта.
+- _productCategory - объект, содержащий соответствия между категориями продуктов и классами CSS.
+
+Основные методы
+
+- `set title(value: string)` - сеттер для установки значения заголовка продукта.
+- `set image(value: string)` - сеттер для установки значения изображения продукта.
+- `set price(value: string)` - сеттер для установки значения цены продукта.
+- `set category(value: string)` - сеттер для установки значения категории продукта и соответствующего класса CSS.
+- `set description(value: string)` - сеттер для установки значения описания продукта.
+- `set index(value: number | null)` - сеттер для установки значения индекса продукта.
+- `get button()` - геттер для получения элемента кнопки продукта.
+
+#### Класс SuccessView
+
+Класс Success представляет компонент для отображения сообщения об успешном заказе. Он наследуется от базового класса Component и содержит методы для установки общей суммы заказа и обработки события закрытия.
+
+`constructor(element: HTMLElement, actions: ISuccessActions)`
+
+- element - HTML-элемент, который представляет компонент успешного заказа.
+- actions - объект, содержащий обработчик события onClick для кнопки закрытия.
+
+Поля
+
+- _close - элемент кнопки закрытия сообщения.
+- _total - элемент для отображения общей суммы заказа.
+
+Основные методы
+
+- `set total(value: number)` - сеттер для установки общей суммы заказа и отображения на странице.
+
+### Основные события
+
+- `card:select` - выбор карточки товара для отображения.
+- `products:loaded`- выгрузка списка товаров с сервера.
+- `card:addtocart` - добавление товара в корзину.
+- `card:deletefromcart`  - удаление товара из корзины.
+- `modal:open` - открытие модального окна.
+- `modal:close` - закрытие модального окна.
+- `basket:open` - открытие окна корзины.
+- `order:open` - открытие окна заказа.
+- `order:submit` - отправка готового заказа.
+- `formErrors:change` - отображение ошибок.
