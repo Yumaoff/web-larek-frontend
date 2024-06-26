@@ -1,11 +1,11 @@
 //Тип для элементов товаров в магазине
 export interface IProduct {
-  id: number;
+  id: string;
   title: string;
   description: string;
   category: string;
   price: number | null;
-  imageUrl: string;
+  image: string;
   index: number;
 }
 
@@ -18,18 +18,28 @@ export interface IApiListResponse<Type> {
 //Тип для методов POST, PUT, DELETE
 export type TApiPostMethods = 'POST' | 'PUT' | 'DELETE';
 
-//Тип для товара в корзине
+//Тип для заказа
+export type TOrder = Pick<IOrder, 'paymentMethod' | 'address' | 'email' | 'phone'>;
+
+//Интерфейс для товара в корзине
 export interface CartItem {
   productId: number;
   quantity: number;
 }
 
+//Ошибки
+export type FormErrors = {
+  email?: string;
+  phone?: string;
+  address?: string;
+  paymentMethod?: string;
+};
+
 //Тип для заказа
 export interface IOrder {
-  id: number;
   email: string;
   phone: string;
-  items: CartItem[];
+  items: string[];
   total: number;
   address: string;
   paymentMethod: string;
@@ -45,13 +55,6 @@ export interface IModalData {
   content: HTMLElement;
 }
 
-//Корзина
-export interface IBasket {
-  products: HTMLElement[];
-  total: number | null;
-  selected: number
-}
-
 //Ответ сервера
 export interface IApi {
   getProducts: () => Promise<IProduct[]>
@@ -62,5 +65,5 @@ export interface IApi {
 export interface IAppData {
   products: IProduct[]
   basket: IProduct[]
-  order: IOrder
+  order: IOrder | null
 }

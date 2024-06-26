@@ -13,8 +13,8 @@ export class Form<IOrder> extends Component<IForm> {
   protected _errors: HTMLElement;
   protected _form: HTMLFormElement;
 
-  constructor(container: HTMLFormElement, protected events: IEvents) {
-    super(container)
+  constructor(element: HTMLFormElement, protected events: IEvents) {
+    super(element)
 
     this.submitBtn = ensureElement<HTMLButtonElement>('.button', this.element);
     this._errors = ensureElement<HTMLElement>('.form__errors', this.element);

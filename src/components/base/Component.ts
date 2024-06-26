@@ -15,7 +15,7 @@ export abstract class Component<T> {
   }
 
   // Устанавливает текстовое содержимое элемента
-  protected setText(element: HTMLElement, value: unknown): void {
+  setText(element: HTMLElement, value: unknown): void {
     if(element){
       element.textContent = String(value);
     }
@@ -25,7 +25,7 @@ export abstract class Component<T> {
   setDisabled(element: HTMLElement, state: boolean): void {
     if(element) {
       if (state) {
-        element.setAttribute('disabled', 'true');
+        element.setAttribute('disabled', 'disabled');
       } else {
         element.removeAttribute('disabled');
       }
@@ -52,7 +52,7 @@ export abstract class Component<T> {
   }
   }
 
-  // Абстрактный метод render, который должен быть реализован в подклассах
+  // Метод рендера элемента
   render(data?: Partial<T>): HTMLElement {
     Object.assign(this as object, data ?? {});
     return this.element;

@@ -1,5 +1,5 @@
-import { IProduct, IOrder, IAppData } from '../types'; // предполагается, что интерфейсы хранятся в types/index.ts
-import { Model } from './base/Model'; // предполагается, что базовый класс Model хранится в соответствующем файле
+import { IProduct, IOrder, IAppData, FormErrors } from '../types'; 
+import { Model } from './base/Model'; 
 import {IEvents} from "./base/Events";
 
 export class AppData extends Model<IAppData> {
@@ -7,6 +7,7 @@ export class AppData extends Model<IAppData> {
   protected _basket: IProduct[] = [];
   protected _order: IOrder;
   protected _selectedProduct: string | null = null;
+  protected formErrors: FormErrors = {};
 
   constructor(data: Partial<IAppData>, events: IEvents, products: IProduct[], basket: IProduct[], order: IOrder) {
     super(data, events);
@@ -35,10 +36,21 @@ export class AppData extends Model<IAppData> {
     return this._products
   }
 
+  isFirstFormFill() {
+    if (this.order === null) {
+        return false;
+    }
+    return this.order.address && this.order.paymentMethod;
+}
+
   // Устанавливаем список продуктов
   setProducts(products: IProduct[]): void {
     this._products = products;
     this.emitChanges('products:changed', { products });
+  }
+
+  getProducts() {
+    return this.products;
   }
 
   // Выбираем продукт для отображения в модальном окне
@@ -54,7 +66,7 @@ export class AppData extends Model<IAppData> {
   }
 
   // Удаляем продукт из корзины
-  removeProductFromBasket(productId: number): void {
+  removeProductFromBasket(productId: string): void {
     this._basket = this._basket.filter(product => product.id !== productId);
     this.emitChanges('basket:remove-product', { productId });
   }
@@ -69,10 +81,24 @@ export class AppData extends Model<IAppData> {
     return this._basket.reduce((total, product) => total + (product.price || 0), 0);
   }
 
+  //Получаем продукт
+  getProduct(cardId: string) {
+    return  this._products.find((item) => item.id === cardId)
+  }
+
+  getBasket() {
+    return this.basket;
+  }
+
   // Очищаем корзину
   clearBasket(): void {
     this._basket = [];
     this.emitChanges('basket:clear', {});
+  }
+
+  //Получить заказ
+  getOrder() {
+    return this.order;
   }
 
   // Очищаем текущий заказ
@@ -82,26 +108,38 @@ export class AppData extends Model<IAppData> {
   }
 
   // Устанавливаем значение для поля заказа
-  setOrderField<K extends keyof IOrder>(field: K, value: IOrder[K]): void {
-    this._order[field] = value;
-    this.emitChanges('order:set-field', { field, value });
+  setOrderField(field: keyof Omit<IOrder, 'items' | 'total'>, value: string) {
+    this.order[field] = value; 
+    this.validateOrder(field);
   }
 
   // Валидируем поля заказа
-  validateOrder(): boolean {
-    let isValid = true;
+  validateOrder(field: keyof IOrder) {
     const errors: Partial<Record<keyof IOrder, string>> = {};
 
-    if (!this._order.email) {
-      isValid = false;
-      errors.email = 'Email is required';
-    }
-    if (!this._order.phone) {
-      isValid = false;
-      errors.phone = 'Phone is required';
-    }
+    // Проверка для полей email и phone
+    if (field === 'email' || field === 'phone') {
+        const emailError = !this.order.email.match(/^\S+@\S+\.\S+$/)
+            ? 'email'
+            : '';
+        const phoneError = !this.order.phone.match(/^\+7\d{10}$/)
+            ? 'телефон'
+            : '';
 
-    this.emitChanges('order:validate', { errors });
-    return isValid;
-  }
+        if (emailError && phoneError) {
+            errors.email = `Необходимо указать ${emailError} и ${phoneError}`;
+        } else if (emailError) {
+            errors.email = `Необходимо указать ${emailError}`;
+        } else if (phoneError) {
+            errors.phone = `Необходимо указать ${phoneError}`;
+        }
+    } else if (!this.order.address) errors.address = 'Необходимо указать адрес';
+    else if (!this.order.paymentMethod)
+        errors.address = 'Необходимо выбрать тип оплаты';
+
+    this.formErrors = errors;
+    this.events.emit('formErrors:change', this.formErrors);
+    return Object.keys(errors).length === 0;
+}
+
 }
