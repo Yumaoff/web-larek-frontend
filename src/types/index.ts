@@ -19,13 +19,7 @@ export interface IApiListResponse<Type> {
 export type TApiPostMethods = 'POST' | 'PUT' | 'DELETE';
 
 //Тип для заказа
-export type TOrder = Pick<IOrder, 'paymentMethod' | 'address' | 'email' | 'phone'>;
-
-//Интерфейс для товара в корзине
-export interface CartItem {
-  productId: number;
-  quantity: number;
-}
+export type TOrder = Pick<IOrder, 'payment' | 'address' | 'email' | 'phone'>;
 
 //Ошибки
 export type FormErrors = {
@@ -42,7 +36,7 @@ export interface IOrder {
   items: string[];
   total: number;
   address: string;
-  paymentMethod: string;
+  payment: string;
 }
 
 export interface IOrderResult {

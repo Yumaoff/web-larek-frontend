@@ -28,7 +28,7 @@ const api = new AppApi(CDN_URL, API_URL);
 const appData = new AppData({}, events, [], [], {
     email: '',
     phone: '',
-    paymentMethod: null,
+    payment: null,
     address: '',
     total: 0,
     items: []
@@ -170,9 +170,11 @@ events.on('order:start', () => {
 });
 
 events.on('order:open', () => {
+  appData.order.total = appData.getTotalPrice()
+  appData.order.items = appData.basket.map(item => item.id)
   modal.render({
       content: orderView.render({
-          paymentMethod: 'online',
+        payment: 'online',
           address: '',
           valid: false,
           errors: [],
@@ -181,14 +183,14 @@ events.on('order:open', () => {
 });
 
 events.on('payment:choosed', (data: { payment: string }) => {
-  appData.setOrderField('paymentMethod', data.payment)
+  appData.setOrderField('payment', data.payment)
 })
 
 events.on('formErrors:change', (errors: Partial<IOrder>) => {
-  const { paymentMethod, address } = errors;
+  const { payment, address } = errors;
   
-  orderView.valid = !paymentMethod && !address;
-  orderView.errors = Object.values({address, paymentMethod}).filter(i => !!i).join('; ');
+  orderView.valid = !payment && !address;
+  orderView.errors = Object.values({address, payment}).filter(i => !!i).join('; ');
 
   const { phone, email } = errors;
 
@@ -226,7 +228,7 @@ events.on('contacts:submit', () => {
       appData.clearBasket()
       page.basketCounter = appData.basket.length
       appData.order = { 
-        paymentMethod: "",
+        payment: "",
         email: "",
         phone: "",
         address: "",

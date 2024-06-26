@@ -1,4 +1,4 @@
-import { IProduct, IOrder, IAppData, FormErrors } from '../types'; 
+import { IProduct, IOrder, IAppData, FormErrors, TOrder } from '../types'; 
 import { Model } from './base/Model'; 
 import {IEvents} from "./base/Events";
 
@@ -40,7 +40,7 @@ export class AppData extends Model<IAppData> {
     if (this.order === null) {
         return false;
     }
-    return this.order.address && this.order.paymentMethod;
+    return this.order.address && this.order.payment;
 }
 
   // Устанавливаем список продуктов
@@ -108,7 +108,7 @@ export class AppData extends Model<IAppData> {
   }
 
   // Устанавливаем значение для поля заказа
-  setOrderField(field: keyof Omit<IOrder, 'items' | 'total'>, value: string) {
+  setOrderField(field: keyof TOrder, value: string) {
     this.order[field] = value; 
     this.validateOrder(field);
   }
@@ -134,7 +134,7 @@ export class AppData extends Model<IAppData> {
             errors.phone = `Необходимо указать ${phoneError}`;
         }
     } else if (!this.order.address) errors.address = 'Необходимо указать адрес';
-    else if (!this.order.paymentMethod)
+    else if (!this.order.payment)
         errors.address = 'Необходимо выбрать тип оплаты';
 
     this.formErrors = errors;

@@ -18,6 +18,7 @@ export class Form<IOrder> extends Component<IForm> {
 
     this.submitBtn = ensureElement<HTMLButtonElement>('.button', this.element);
     this._errors = ensureElement<HTMLElement>('.form__errors', this.element);
+    this.formName = this.element.getAttribute('name');
 
     this.element.addEventListener('submit', (e) => {
       e.preventDefault()
