@@ -62,19 +62,16 @@ export class AppData extends Model<IAppData> {
 	// Выбираем продукт для отображения в модальном окне
 	selectProduct(productId: string): void {
 		this._selectedProduct = productId;
-		this.emitChanges('product:preview', { productId });
 	}
 
 	// Добавляем продукт в корзину
 	addProductToBasket(product: IProduct): void {
 		this._basket.push(product);
-		this.emitChanges('basket:add-product', { product });
 	}
 
 	// Удаляем продукт из корзины
 	removeProductFromBasket(productId: string): void {
 		this._basket = this._basket.filter((product) => product.id !== productId);
-		this.emitChanges('basket:remove-product', { productId });
 	}
 
 	// Получаем продукты в корзине
@@ -102,7 +99,6 @@ export class AppData extends Model<IAppData> {
 	// Очищаем корзину
 	clearBasket(): void {
 		this._basket = [];
-		this.emitChanges('basket:clear', {});
 	}
 
 	//Получить заказ
@@ -113,7 +109,6 @@ export class AppData extends Model<IAppData> {
 	// Очищаем текущий заказ
 	clearOrder(): void {
 		this._order = {} as IOrder;
-		this.emitChanges('order:clear', {});
 	}
 
 	// Устанавливаем значение для поля заказа

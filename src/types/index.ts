@@ -31,12 +31,12 @@ export type FormErrors = {
 
 //Тип для заказа
 export interface IOrder {
+	payment: string;
 	email: string;
 	phone: string;
+	address: string;
 	items: string[];
 	total: number;
-	address: string;
-	payment: string;
 }
 
 export interface IOrderResult {

@@ -323,6 +323,7 @@ export interface IAppData {
 - `set selected(items: number)` - сеттер для управления состоянием кнопки оформления заказа в зависимости от количества выбранных продуктов.
 - `set products(products: HTMLElement[])` - сеттер для обновления списка продуктов в корзине.
 - `set total(total: number)` - сеттер для обновления отображения общей стоимости в корзине.
+- `getElement(): HTMLElement` - возвращает переданный элемент.
 
 #### Класс ContactsView
 
@@ -446,6 +447,7 @@ export interface IAppData {
 - `modal:open` - открытие модального окна.
 - `modal:close` - закрытие модального окна.
 - `basket:open` - открытие окна корзины.
+- `basket:change` - обновляет содержимое корзины.
 - `order:open` - открытие окна заказа.
 - `order:submit` - отправка готового заказа.
 - `formErrors:change` - отображение ошибок.

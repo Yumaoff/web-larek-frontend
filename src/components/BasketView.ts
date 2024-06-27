@@ -29,6 +29,10 @@ export class Basket extends Component<IBasket> {
 		this.products = [];
 	}
 
+	getElement(): HTMLElement {
+		return this.element;
+	}
+
 	set selected(items: number) {
 		this.setDisabled(this._button, items <= 0);
 	}

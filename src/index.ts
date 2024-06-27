@@ -71,9 +71,9 @@ events.on('card:select', (item: IProduct) => {
 		onClick: () => {
 			if (appData.basket.includes(item)) {
 				preview.setText(preview.button, 'В корзину');
-				events.emit('card:deletefromcart', item);
+				events.emit('card:deleteFromCart', item);
 			} else {
-				events.emit('card:addtocart', item);
+				events.emit('card:addToCart', item);
 				preview.setText(preview.button, 'Удалить из корзины');
 			}
 		},
@@ -100,19 +100,21 @@ events.on('card:select', (item: IProduct) => {
 	});
 });
 
-events.on('card:addtocart', (item: IProduct) => {
+events.on('card:addToCart', (item: IProduct) => {
 	appData.addProductToBasket(item);
 	page.basketCounter = appData.basket.length;
+	events.emit('basket:change');
 });
 
 const basket = ensureElement<HTMLTemplateElement>('#basket');
 const basketView = new Basket(cloneTemplate(basket), events);
 
-events.on('basket:open', () => {
+//Обновление содержимого корзины
+events.on('basket:change', () => {
 	const products = appData.basket.map((item, index) => {
 		const product = new Product('card', cloneTemplate(productInBasket), {
 			onClick: () => {
-				events.emit('card:deletefromcart', item);
+				events.emit('card:deleteFromCart', item);
 			},
 		});
 
@@ -123,19 +125,25 @@ events.on('basket:open', () => {
 			index: (index += 1),
 		});
 	});
+
+	basketView.render({
+		products,
+		total: appData.getTotalPrice(),
+		selected: products.length,
+	});
+})
+
+//Отображение модального окна корзины
+events.on('basket:open', () => {
 	modal.render({
-		content: basketView.render({
-			products,
-			total: appData.getTotalPrice(),
-			selected: products.length,
-		}),
+		content: basketView.getElement(),
 	});
 });
 
-events.on('card:deletefromcart', (item: IProduct) => {
+events.on('card:deleteFromCart', (item: IProduct) => {
 	appData.removeProductFromBasket(item.id);
 	page.basketCounter = appData.basket.length;
-	events.emit('basket:open');
+	events.emit('basket:change');
 });
 
 const order = ensureElement<HTMLTemplateElement>('#order');
@@ -144,32 +152,7 @@ const orderView = new OrderForm(cloneTemplate(order), events);
 const contacts = ensureElement<HTMLTemplateElement>('#contacts');
 const contactsView = new ContactsForm(cloneTemplate(contacts), events);
 
-events.on('order:start', () => {
-	if (!appData.isFirstFormFill()) {
-		const data = {
-			address: '',
-		};
-		modal.render({
-			content: orderView.render({
-				valid: false,
-				errors: [],
-				...data,
-			}),
-		});
-	} else {
-		const data = {
-			phone: '',
-			email: '',
-		};
-		modal.render({
-			content: contactsView.render({
-				valid: false,
-				errors: [],
-				...data,
-			}),
-		});
-	}
-});
+
 
 events.on('order:open', () => {
 	appData.order.total = appData.getTotalPrice();
@@ -237,15 +220,9 @@ events.on('contacts:submit', () => {
 				onClick: () => {
 					modal.close();
 					appData.clearBasket();
+					appData.clearOrder();
 					page.basketCounter = appData.basket.length;
-					appData.order = {
-						payment: '',
-						email: '',
-						phone: '',
-						address: '',
-						items: [],
-						total: 0,
-					};
+					events.emit('basket:change');
 				},
 			});
 
