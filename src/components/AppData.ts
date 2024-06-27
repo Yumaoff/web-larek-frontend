@@ -42,13 +42,6 @@ export class AppData extends Model<IAppData> {
 		return this._products;
 	}
 
-	isFirstFormFill() {
-		if (this.order === null) {
-			return false;
-		}
-		return this.order.address && this.order.payment;
-	}
-
 	// Устанавливаем список продуктов
 	setProducts(products: IProduct[]): void {
 		this._products = products;
@@ -108,7 +101,10 @@ export class AppData extends Model<IAppData> {
 
 	// Очищаем текущий заказ
 	clearOrder(): void {
-		this._order = {} as IOrder;
+		this.order.address = '';
+		this.order.phone = '';
+		this.order.email = '';
+		this.order.payment = '';
 	}
 
 	// Устанавливаем значение для поля заказа

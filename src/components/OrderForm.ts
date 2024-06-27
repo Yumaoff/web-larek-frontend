@@ -63,5 +63,20 @@ export class OrderForm extends Form<IOrder> {
 	resetPaymentButtons() {
 		this.toggleCard(false);
 		this.toggleCash(false);
-}
+		this._payment = '';
+	}
+
+	resetForm() {
+    this.address = '';
+    this.resetPaymentButtons();
+    this.validateForm();
+  }
+
+	validateForm() {
+    const address = this._address.value;
+    const payment = this._payment;
+    const isValid = address.trim() !== '' && payment !== '';
+
+    this.events.emit('order.form:validate', { valid: isValid });
+  }
 }
