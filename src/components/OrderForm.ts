@@ -6,7 +6,7 @@ export class OrderForm extends Form<IOrder> {
 	protected _cashPayment: HTMLButtonElement;
 	protected _cardPayment: HTMLButtonElement;
 	protected _address: HTMLInputElement;
-	protected _paymentMethod: string = '';
+	protected _payment: string = '';
 
 	constructor(element: HTMLFormElement, events: IEvents) {
 		super(element, events);
@@ -25,6 +25,7 @@ export class OrderForm extends Form<IOrder> {
 			this.toggleCard();
 			this.toggleCash(false);
 			this.setPayment(this._cardPayment);
+			
 		});
 	}
 
@@ -32,18 +33,22 @@ export class OrderForm extends Form<IOrder> {
 		this._address.value = value;
 	}
 
+	set payment(value: string) {
+		this.events.emit('payment:choosed', { payment: value });
+}
+
 	// Устанавливает тип оплаты
 	setPayment(button: HTMLButtonElement) {
 		if (
 			button.classList.contains('button_alt-active') &&
 			button.getAttribute('name') === 'card'
 		) {
-			this._paymentMethod = 'card';
+			this._payment = 'card';
 		} else {
-			this._paymentMethod = 'cash';
+			this._payment = 'cash';
 		}
 
-		this.events.emit('payment:choosed', { payment: this._paymentMethod });
+		this.events.emit('payment:choosed', { payment: this._payment });
 	}
 
 	// Переключает кнопку "оплата картой"
@@ -54,4 +59,9 @@ export class OrderForm extends Form<IOrder> {
 	toggleCash(state: boolean = true) {
 		this.toggleClass(this._cashPayment, 'button_alt-active', state);
 	}
+
+	resetPaymentButtons() {
+		this.toggleCard(false);
+		this.toggleCash(false);
+}
 }

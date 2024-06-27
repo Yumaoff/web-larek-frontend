@@ -157,14 +157,16 @@ const contactsView = new ContactsForm(cloneTemplate(contacts), events);
 events.on('order:open', () => {
 	appData.order.total = appData.getTotalPrice();
 	appData.order.items = appData.basket.map((item) => item.id);
+	orderView.resetPaymentButtons();
 	modal.render({
 		content: orderView.render({
-			payment: 'online',
+			payment: '',
 			address: '',
 			valid: false,
 			errors: [],
 		}),
 	});
+	console.log(orderView)
 });
 
 events.on('payment:choosed', (data: { payment: string }) => {
@@ -204,10 +206,13 @@ events.on(
 events.on('order:submit', () => {
 	modal.render({
 		content: contactsView.render({
+			email: '',
+			phone: '',
 			valid: false,
 			errors: [],
 		}),
 	});
+	console.log(orderView)
 });
 
 const success = ensureElement<HTMLTemplateElement>('#success');
@@ -220,7 +225,6 @@ events.on('contacts:submit', () => {
 				onClick: () => {
 					modal.close();
 					appData.clearBasket();
-					appData.clearOrder();
 					page.basketCounter = appData.basket.length;
 					events.emit('basket:change');
 				},
@@ -231,6 +235,8 @@ events.on('contacts:submit', () => {
 					total: appData.order.total,
 				}),
 			});
+
+			
 		})
 		.catch((err) => console.log(err));
 });

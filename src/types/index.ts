@@ -26,7 +26,7 @@ export type FormErrors = {
 	email?: string;
 	phone?: string;
 	address?: string;
-	paymentMethod?: string;
+	payment?: string;
 };
 
 //Тип для заказа

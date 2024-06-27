@@ -366,6 +366,7 @@ export interface IAppData {
 - `setPayment(button: HTMLButtonElement)` - устанавливает выбранный способ оплаты и инициирует событие выбора оплаты.
 - `toggleCard(state: boolean = true)` - переключает состояние кнопки выбора оплаты картой.
 - `toggleCash(state: boolean = true)` - переключает состояние кнопки выбора оплаты наличными.
+- `resetPaymentButtons()` - обнуляет состояния кнопок.
 
 #### Класс PageView
 
