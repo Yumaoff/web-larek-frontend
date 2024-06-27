@@ -131,7 +131,7 @@ events.on('basket:change', () => {
 		total: appData.getTotalPrice(),
 		selected: products.length,
 	});
-})
+});
 
 //Отображение модального окна корзины
 events.on('basket:open', () => {
@@ -152,21 +152,19 @@ const orderView = new OrderForm(cloneTemplate(order), events);
 const contacts = ensureElement<HTMLTemplateElement>('#contacts');
 const contactsView = new ContactsForm(cloneTemplate(contacts), events);
 
-
-
 events.on('order:open', () => {
-	console.log(orderView)
-  appData.order.total = appData.getTotalPrice();
-  appData.order.items = appData.basket.map((item) => item.id);
+	appData.order.total = appData.getTotalPrice();
+	appData.order.items = appData.basket.map((item) => item.id);
 	appData.clearOrder();
-  modal.render({
-    content: orderView.render({
-      payment: '',
-      address: '',
-      valid: false,
-      errors: [],
-    }),
-  });
+	orderView.resetForm();
+	modal.render({
+		content: orderView.render({
+			payment: '',
+			address: '',
+			valid: false,
+			errors: [],
+		}),
+	});
 });
 
 events.on('payment:choosed', (data: { payment: string }) => {
@@ -212,32 +210,32 @@ events.on('order:submit', () => {
 			errors: [],
 		}),
 	});
-	console.log(orderView)
 });
 
 const success = ensureElement<HTMLTemplateElement>('#success');
 
 events.on('contacts:submit', () => {
-  api
-    .orderProducts(appData.order)
-    .then((result) => {
-      const successView = new Success(cloneTemplate(success), {
-        onClick: () => {
-          modal.close();
-          appData.clearBasket();
-          page.basketCounter = appData.basket.length;
-          events.emit('basket:change');
-          orderView.resetForm(); 
-        },
-      });
+	api
+		.orderProducts(appData.order)
+		.then((result) => {
+			appData.clearBasket();
+			page.basketCounter = appData.basket.length;
+			events.emit('basket:change');
+			orderView.resetForm();
 
-      modal.render({
-        content: successView.render({
-          total: appData.order.total,
-        }),
-      });
-    })
-    .catch((err) => console.log(err));
+			const successView = new Success(cloneTemplate(success), {
+				onClick: () => {
+					modal.close();
+				},
+			});
+
+			modal.render({
+				content: successView.render({
+					total: appData.order.total,
+				}),
+			});
+		})
+		.catch((err) => console.log(err));
 });
 
 events.onAll((event) => {

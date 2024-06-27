@@ -208,7 +208,6 @@ export interface IAppData {
 - `products: IProduct[]` - массив объектов продуктов.
 - `basket: IProduct[]` - массив товаров в корзине.
 - `order: IOrder` - текущий заказ.
-- `selectedProduct: string | null` - ID товара, выбранного для отображения в модальном окне.
 - `formErrors` - объект ошибок формы.
 
 Методы для работы с данными:
@@ -221,7 +220,6 @@ export interface IAppData {
 - `isFirstFormFill()` - проверяет, заполнены ли поля адреса и оплаты в заказе.
 - `setProducts(products: IProduct[])` - устанавливает список продуктов и инициирует событие изменения продуктов.
 - `getProducts()` - возвращает список продуктов.
-- `selectProduct(productId: string)` - выбирает продукт для отображения в модальном окне и инициирует событие предварительного просмотра продукта.
 - `addProductToBasket(product: IProduct)` - добавляет продукт в корзину и инициирует событие добавления продукта в корзину.
 - `removeProductFromBasket(productId: string)` - удаляет продукт из корзины по его ID и инициирует событие удаления продукта из корзины.
 - `getBasketProducts()` - возвращает массив товаров в корзине.
@@ -230,7 +228,7 @@ export interface IAppData {
 - `getBasket()` - возвращает корзину.
 - `clearBasket()` - очищает корзину и инициирует событие очистки корзины.
 - `getOrder()` - возвращает текущий заказ.
-- `clearOrder()` - очищает текущий заказ и инициирует событие очистки заказа.
+- `clearOrder()` - очищает текущий заказ.
 - `setOrderField(field: keyof TOrder, value: string)` - устанавливает значение для поля заказа и валидирует заказ.
 - `validateOrder(field: keyof IOrder)` - валидирует поля заказа и обновляет объект ошибок формы.
 
@@ -367,6 +365,7 @@ export interface IAppData {
 - `toggleCard(state: boolean = true)` - переключает состояние кнопки выбора оплаты картой.
 - `toggleCash(state: boolean = true)` - переключает состояние кнопки выбора оплаты наличными.
 - `resetPaymentButtons()` - обнуляет состояния кнопок.
+- `resetForm` - обнуляет форму заказа.
 
 #### Класс PageView
 
@@ -450,5 +449,6 @@ export interface IAppData {
 - `basket:open` - открытие окна корзины.
 - `basket:change` - обновляет содержимое корзины.
 - `order:open` - открытие окна заказа.
-- `order:submit` - отправка готового заказа.
+- `order:submit` - отправка данных адреса и способа оплаты заказа.
 - `formErrors:change` - отображение ошибок.
+- `contacts:submit` - отправка готового заказа.

@@ -26,7 +26,9 @@ export class Success extends Component<ISuccess> {
 		);
 
 		if (actions?.onClick) {
-			this._close.addEventListener('click', actions.onClick);
+			this._close.addEventListener('click', () => {
+				actions.onClick();
+			});
 		}
 	}
 

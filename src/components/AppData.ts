@@ -6,7 +6,6 @@ export class AppData extends Model<IAppData> {
 	protected _products: IProduct[] = [];
 	protected _basket: IProduct[] = [];
 	protected _order: IOrder;
-	protected _selectedProduct: string | null = null;
 	protected formErrors: FormErrors = {};
 
 	constructor(
@@ -45,16 +44,10 @@ export class AppData extends Model<IAppData> {
 	// Устанавливаем список продуктов
 	setProducts(products: IProduct[]): void {
 		this._products = products;
-		this.emitChanges('products:changed', { products });
 	}
 
 	getProducts() {
 		return this.products;
-	}
-
-	// Выбираем продукт для отображения в модальном окне
-	selectProduct(productId: string): void {
-		this._selectedProduct = productId;
 	}
 
 	// Добавляем продукт в корзину
@@ -101,10 +94,8 @@ export class AppData extends Model<IAppData> {
 
 	// Очищаем текущий заказ
 	clearOrder(): void {
-		this.order.address = '';
 		this.order.phone = '';
 		this.order.email = '';
-		this.order.payment = '';
 	}
 
 	// Устанавливаем значение для поля заказа

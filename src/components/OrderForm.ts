@@ -25,7 +25,6 @@ export class OrderForm extends Form<IOrder> {
 			this.toggleCard();
 			this.toggleCash(false);
 			this.setPayment(this._cardPayment);
-			
 		});
 	}
 
@@ -35,7 +34,7 @@ export class OrderForm extends Form<IOrder> {
 
 	set payment(value: string) {
 		this.events.emit('payment:choosed', { payment: value });
-}
+	}
 
 	// Устанавливает тип оплаты
 	setPayment(button: HTMLButtonElement) {
@@ -67,16 +66,7 @@ export class OrderForm extends Form<IOrder> {
 	}
 
 	resetForm() {
-    this.address = '';
-    this.resetPaymentButtons();
-    this.validateForm();
-  }
-
-	validateForm() {
-    const address = this._address.value;
-    const payment = this._payment;
-    const isValid = address.trim() !== '' && payment !== '';
-
-    this.events.emit('order.form:validate', { valid: isValid });
-  }
+		this.address = '';
+		this.resetPaymentButtons();
+	}
 }
